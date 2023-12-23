@@ -1,0 +1,28 @@
+Title: CODEON
+Author: Sankalp Chakre
+Difficulty: Easy
+Domain: Cryptography
+
+DESCRIPTION:
+ 	My chemist friend has doubt that his phone is used by others for calling without knowing him. So, he wants me to find some information related to it, that’s why he sent me some information related to it. But I am unable to understand it can you help me?
+	Flag format: VishwaCTF{}	(flag letters must be capital)
+Txt file: codon.txt
+CHJXOGVUWKQPVHDGHPEUDKONCQW
+
+He gave me some instructions related to it:
+1)He told me he saw some names in call logs those are:
+	Ben-Ivy-Fiona-Iris-Dakota
+2)also he told me to remember word 'codeon'.
+
+Solution:
+BIFID CIPHER encoded:
+GGG RRC TAQ OBB AQT QTT QEQ ECQ QCE
+
+DECODED CODON SEQUENCE:
+Key: codeon
+
+ATG TAT TGT GCC TTA CTC CGA GAA ACT 
+M     Y     C     A      L      L     S       E        T	(RESP. SEQUENCE WITH ACID NOTATION)
+
+Flag: VishwaCTF{MYCALLSET}
+
