@@ -1,0 +1,107 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <cmath>
+using namespace std;
+void DFS(vector<vector<int>>& adjList, int startVertex) {
+ vector<int> visited(adjList.size(), 0); 
+ stack<int> stk;
+ stk.push(startVertex);
+ visited[startVertex] = 1;
+ cout << "DFS Traversal starting from vertex " << startVertex << " : ";
+ while (!stk.empty()) {
+ int currentVertex = stk.top();
+ stk.pop();
+ if (visited[currentVertex] != 2) {
+ cout << currentVertex << " ";
+ visited[currentVertex] = 2; 
+ for (int adjacentVertex : adjList[currentVertex]) {
+ if (visited[adjacentVertex] == 0) {
+ stk.push(adjacentVertex);
+ visited[adjacentVertex] = 1; 
+ }
+ }
+ }
+ }
+ cout << endl;
+}
+void BFS(vector<vector<int>>& adjList, int startVertex) {
+ vector<int> visited(adjList.size(), 0); 
+ queue<int> q;
+ visited[startVertex] = 1;
+ q.push(startVertex);
+ cout << "BFS Traversal starting from vertex " << startVertex << " : ";
+ while (!q.empty()) {
+ int currentVertex = q.front();
+ q.pop();
+ cout << currentVertex << " ";
+ for (int adjacentVertex : adjList[currentVertex]) {
+ if (visited[adjacentVertex] == 0) {
+ visited[adjacentVertex] = 1; 
+ q.push(adjacentVertex);
+ }
+ }
+ visited[currentVertex] = 2;
+ }
+ cout << endl;
+}
+void printGraph(const vector<vector<int>>& adjList) {
+ int maxVertex = adjList.size() - 1;
+ int numDigits = maxVertex > 0 ? log10(maxVertex) + 1 : 1;
+ cout << "Vertices: ";
+ for (int i = 1; i <= maxVertex; ++i) {
+ cout << setw(numDigits + 2) << i;
+ }
+ cout << endl;
+ cout << " ";
+ cout << endl;
+ for (int i = 1; i <= maxVertex; ++i) {
+ cout << setw(numDigits) << i << " |";
+ for (int j = 1; j <= maxVertex; ++j) {
+ bool isConnected = find(adjList[i].begin(), adjList[i].end(), j) != adjList[i].end();
+ if (isConnected) {
+ cout << " 1 |";
+ } else {
+ cout << " |";
+ }
+ }
+ cout << endl;
+ cout << " ";
+ cout << endl;
+ }
+}
+int main() {
+ int v, e;
+ cout << "Enter the number of vertices of the graph: ";
+ cin >> v;
+ cout << "\nEnter the number of edges of the graph: ";
+ cin >> e;
+ vector<vector<int>> adjList(v + 1); 
+ cout << "Enter the edges (vertex pairs):" << endl;
+ for (int i = 0; i < e; ++i) {
+ int v1, v2;
+ cout << "Edge " << i + 1 << ": ";
+ cin >> v1 >> v2;
+ adjList[v1].push_back(v2);
+ adjList[v2].push_back(v1); 
+ }
+ cout << "\nAdjacency list representation of the graph:" << endl;
+ for (int i = 1; i <= v; ++i) {
+ cout << "Vertex " << i << " -> ";
+ for (int j : adjList[i]) {
+ cout << j << " ";
+ }
+ cout << endl;
+ }
+ int startVertex;
+ cout << "\nEnter the starting vertex for DFS and BFS traversal: ";
+ cin >> startVertex;
+ DFS(adjList, startVertex);
+ BFS(adjList, startVertex);
+ printGraph(adjList);
+ return 0;
+} 
