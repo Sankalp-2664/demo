@@ -1,0 +1,128 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+class initialize {
+ int* parent;
+ int* rank;
+public:
+ initialize(int n) {
+ parent = new int[n];
+ rank = new int[n];
+ for (int i = 0; i < n; i++) {
+ parent[i] = -1;
+ rank[i] = 1;
+ }
+ }
+ int find(int i) {
+ if (parent[i] == -1)
+ return i;
+ return parent[i] = find(parent[i]);
+ }
+ void unite(int x, int y) {
+ int s1 = find(x);
+ int s2 = find(y);
+ if (s1 != s2) {
+ if (rank[s1] < rank[s2]) {
+ parent[s1] = s2;
+ }
+ else if (rank[s1] > rank[s2]) {
+ parent[s2] = s1;
+ }
+ else {
+ parent[s2] = s1;
+ rank[s1] += 1;
+ }
+ }
+ }
+};
+class Graph {
+ vector<vector<pair<int, int>>> adjList;
+ vector<vector<int>> adjMatrix;
+ vector<vector<int>> edgelist;
+ int V;
+public:
+ Graph(int V) {
+ this->V = V;
+ adjList.resize(V);
+ adjMatrix.resize(V, vector<int>(V, -1));
+ }
+ void addEdge(int x, int y, int w) {
+ adjList[x].push_back({ y, w });
+ adjList[y].push_back({ x, w });
+ adjMatrix[x][y] = w;
+ adjMatrix[y][x] = w;
+ edgelist.push_back({ w, x, y });
+ }
+ void printAdjacencyList() {
+ cout << "Adjacency List Representation:\n";
+ for (int i = 0; i < V; ++i) {
+ cout << "Vertex " << i << " -> ";
+ for (auto& edge : adjList[i]) {
+ cout << "(" << edge.first << ", " << edge.second << ") ";
+ }
+ cout << endl;
+ }
+ }
+ void printAdjacencyMatrix() {
+ cout << "Adjacency Matrix Representation:\n";
+ for (int i = 0; i < V; ++i) {
+ for (int j = 0; j < V; ++j) {
+ cout << adjMatrix[i][j] << "\t";
+ }
+ cout << endl;
+ }
+ }
+ void kruskals_mst() {
+ sort(edgelist.begin(), edgelist.end());
+ initialize s(V);
+ int ans = 0;
+ cout << "Following are the edges in the constructed MST" << endl;
+ for (auto edge : edgelist) {
+ int w = edge[0];
+ int x = edge[1];
+ int y = edge[2];
+ if (s.find(x) != s.find(y)) {
+ s.unite(x, y);
+ ans += w;
+ cout << x << " -- " << y << " == " << w << endl;
+ }
+ }
+ cout << "Minimum Cost Spanning Tree: " << ans << endl;
+ }
+};
+int main() {
+ int V, E;
+ cout << "Enter the number of vertices in the graph: ";
+ cin >> V;
+ if (V <= 0) {
+ cerr << "Invalid number of vertices. Exiting..." << endl;
+ return 1;
+ }
+ cout << "Enter the number of edges in the graph: ";
+ cin >> E;
+ if (E < 0 || E > V * (V - 1) / 2) {
+ cerr << "Invalid number of edges. Exiting..." << endl;
+ return 1;
+ }
+ Graph g(V);
+ cout << "Enter the edges in the format 'source destination weight':" << endl;
+ for (int i = 0; i < E; ++i) {
+ int source, destination, weight;
+ cin >> source >> destination >> weight;
+ if (source < 0 || source >= V || destination < 0 || destination >= V || weight <= 0) {
+ cerr << "Invalid edge parameters. Please enter again." << endl;
+ --i; 
+ continue;
+ }
+ g.addEdge(source, destination, weight);
+ }
+ cout << "\nGraph Details:\n";
+ g.printAdjacencyList();
+ cout << endl;
+ g.printAdjacencyMatrix();
+ cout << endl;
+ cout << "\nMinimum Spanning Tree using Kruskal's Algorithm:\n";
+ g.kruskals_mst();
+ return 0;
+}
