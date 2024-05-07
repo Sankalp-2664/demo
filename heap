@@ -1,0 +1,143 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <iomanip>
+using namespace std;
+
+struct Student
+{
+    int rollNumber;
+    string name;
+    double grade;
+
+    Student(int roll, string nm, double grd) : rollNumber(roll), name(nm), grade(grd) {}
+};
+
+class MaxHeap
+{
+private:
+    vector<Student> heap;
+
+    void heapifyUp(int index)
+    {
+        int parent = (index - 1) / 2;
+        while (index > 0 && heap[index].grade > heap[parent].grade)
+        {
+            swap(heap[index], heap[parent]);
+            index = parent;
+            parent = (index - 1) / 2;
+        }
+    }
+
+public:
+    void insert(Student student)
+    {
+        heap.push_back(student);
+        heapifyUp(heap.size() - 1);
+    }
+
+    Student getTopper()
+    {
+        if (heap.empty())
+        {
+            cerr << "Heap is empty!\n";
+            return Student(-1, "", -1);
+        }
+        return heap[0];
+    }
+
+    void removeTopper()
+    {
+        if (heap.empty())
+        {
+            cerr << "Heap is empty!\n";
+            return;
+        }
+        heap[0] = heap.back();
+        heap.pop_back();
+        int index = 0;
+        int leftChild, rightChild, largerChild;
+        while (true)
+        {
+            leftChild = 2 * index + 1;
+            rightChild = 2 * index + 2;
+            if (leftChild >= heap.size())
+                break;
+            if (rightChild >= heap.size())
+                largerChild = leftChild;
+            else
+                largerChild = (heap[leftChild].grade > heap[rightChild].grade) ? leftChild : rightChild;
+            if (heap[index].grade < heap[largerChild].grade)
+                swap(heap[index], heap[largerChild]);
+            else
+                break;
+            index = largerChild;
+        }
+    }
+};
+
+bool compareByGrade(const Student &a, const Student &b)
+{
+    return a.grade < b.grade;
+}
+
+int main()
+{
+    vector<Student> students;
+    MaxHeap maxHeap;
+
+    int choice;
+    do
+    {
+        cout << "\nMenu:\n1. Add Student\n2. Display Next Topper for Internship\n3. Sort Students by Grade\n4. Exit\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+        {
+            int roll;
+            string name;
+            double grade;
+            cout << "Enter Roll Number: ";
+            cin >> roll;
+            cout << "Enter Name: ";
+            cin.ignore();
+            getline(cin, name);
+            cout << "Enter Grade: ";
+            cin >> grade;
+            Student newStudent(roll, name, grade);
+            students.push_back(newStudent);
+            maxHeap.insert(newStudent);
+            break;
+        }
+        case 2:
+        {
+            Student topper = maxHeap.getTopper();
+            if (topper.rollNumber != -1)
+            {
+                cout << "Next Topper for Internship:\nRoll Number: " << topper.rollNumber << "\nName: " << topper.name << "\nGrade: " << fixed << setprecision(2) << topper.grade << endl;
+            }
+            break;
+        }
+        case 3:
+        {
+            sort(students.begin(), students.end(), compareByGrade);
+            cout << "Students Sorted by Grade (Ascending):\n";
+            cout << "Roll Number\tName\t\tGrade\n";
+            for (const auto &student : students)
+            {
+                cout << student.rollNumber << "\t\t" << student.name << "\t\t" << fixed << setprecision(2) << student.grade << endl;
+            }
+            break;
+        }
+        case 4:
+            cout << "Exiting program...\n";
+            break;
+        default:
+            cout << "Invalid choice! Please enter a valid option.\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}
