@@ -1,0 +1,117 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+class Graph {
+ vector<vector<pair<int, int>>> adjList;
+ int V;
+public:
+ Graph(int V) {
+ this->V = V;
+ adjList.resize(V);
+ }
+ void addEdge(int x, int y, int w) {
+ adjList[x].push_back({y, w});
+ adjList[y].push_back({x, w});
+ }
+ void printAdjacencyList() {
+ cout << "Adjacency List Representation:\n";
+ for (int i = 0; i < V; ++i) {
+ cout << "Vertex " << i << " -> ";
+ for (auto& edge : adjList[i]) {
+ cout << "(" << edge.first << ", " << edge.second << ") ";
+ }
+ cout << endl;
+ }
+ }
+ void printAdjacencyMatrix() {
+ cout << "Adjacency Matrix Representation:\n";
+ for (int i = 0; i < V; ++i) {
+ for (int j = 0; j < V; ++j) {
+ int weight = -1;
+ for (auto& neighbor : adjList[i]) {
+ if (neighbor.first == j) {
+ weight = neighbor.second;
+ break;
+ }
+ }
+ cout << weight << "\t";
+ }
+ cout << endl;
+ }
+ }
+ int prim_mst() {
+ vector<int> parent(V, -1); // Array to store constructed MST
+ vector<int> key(V, INT_MAX); // Key values to pick minimum weight edge
+ vector<bool> mstSet(V, false); // To represent set of vertices included in MST
+ // Start with the first vertex
+ key[0] = 0; // Key value of first vertex is always 0
+ parent[0] = -1; // First node is always root of MST
+ // Construct MST for V-1 vertices
+ for (int count = 0; count < V - 1; ++count) {
+ // Pick the minimum key vertex from the set of vertices not yet included in MST
+ int minKey = INT_MAX, minIndex;
+ for (int v = 0; v < V; ++v) {
+ if (!mstSet[v] && key[v] < minKey) {
+ minKey = key[v];
+ minIndex = v;
+ }
+ }
+ // Add the picked vertex to the MST Set
+ mstSet[minIndex] = true;
+ // Update key and parent for adjacent vertices of the picked vertex
+ for (auto& neighbor : adjList[minIndex]) {
+ int v = neighbor.first;
+ int weight = neighbor.second;
+ if (!mstSet[v] && weight < key[v]) {
+ parent[v] = minIndex;
+ key[v] = weight;
+ }
+ }
+ }
+ // Print the constructed MST
+ cout << "Following are the edges in the constructed MST" << endl;
+ int totalWeight = 0;
+ for (int i = 1; i < V; ++i) {
+ cout << parent[i] << " -- " << i << " == " << key[i] << endl;
+ totalWeight += key[i];
+ }
+ return totalWeight;
+ }
+};
+int main() {
+ int V, E;
+ cout << "Enter the number of vertices in the graph: ";
+ cin >> V;
+ if (V <= 0) {
+ cerr << "Invalid number of vertices. Exiting..." << endl;
+ return 1;
+ }
+ Graph g(V);
+ cout << "Enter the number of edges in the graph: ";
+ cin >> E;
+ if (E < 0 || E > V * (V - 1) / 2) {
+ cerr << "Invalid number of edges. Exiting..." << endl;
+ return 1;
+ }
+ cout << "Enter the edges in the format 'source destination weight':" << endl;
+ for (int i = 0; i < E; ++i) {
+ int source, destination, weight;
+ cin >> source >> destination >> weight;
+ if (source < 0 || source >= V || destination < 0 || destination >= V || weight <= 0) {
+ cerr << "Invalid edge parameters. Please enter again." << endl;
+ --i; // To re-enter the current edge
+ continue;
+ }
+ g.addEdge(source, destination, weight);
+ }
+ cout << "\nGraph Details:\n";
+ g.printAdjacencyList();
+ cout << endl;
+ g.printAdjacencyMatrix();
+ cout << endl;
+ cout << "\nMinimum Spanning Tree using Prim's Algorithm:\n";
+ int totalWeight = g.prim_mst();
+ cout << "Total weight of MST: " << totalWeight << endl;
+ return 0;
+}
