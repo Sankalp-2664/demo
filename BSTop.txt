@@ -1,0 +1,276 @@
+#include <iostream>
+#include <queue>
+#include <cmath>
+using namespace std;
+class TreeNode {
+public:
+ int data;
+ TreeNode* left;
+ TreeNode* right;
+ TreeNode(int value) : data(value), left(nullptr), right(nullptr) {}
+ void printSpace(double n) {
+ for (; n > 0; n--) {
+ cout << "\t";
+ }
+ }
+ void displayTreeStructure(TreeNode* root, int depth = 0) {
+ if (root == nullptr) {
+ return;
+ }
+ displayTreeStructure(root->right, depth + 1);
+ printSpace(depth);
+ cout << root->data << endl;
+ displayTreeStructure(root->left, depth + 1);
+ }
+};
+class Tree {
+public:
+ TreeNode* root;
+ Tree(TreeNode* node) : root(node) {}
+};
+int height(TreeNode* root) {
+ if (root == nullptr)
+ return 0;
+ return max(height(root->left), height(root->right)) + 1;
+}
+int getcol(int h) {
+ if (h == 1)
+ return 1;
+ return getcol(h - 1) + getcol(h - 1) + 1;
+}
+void printTree(int** M, TreeNode* root, int col, int row, int treeHeight) {
+ if (root == nullptr)
+ return;
+ M[row][col] = root->data;
+ printTree(M, root->left, col - pow(2, treeHeight - 2), row + 1, treeHeight - 1);
+ printTree(M, root->right, col + pow(2, treeHeight - 2), row + 1, treeHeight - 1);
+}
+void TreePrinter(const Tree& tree) {
+ int h = height(tree.root);
+ int col = getcol(h);
+ int** M = new int*[h];
+ for (int i = 0; i < h; i++) {
+ M[i] = new int[col];
+ for (int j = 0; j < col; j++) {
+ M[i][j] = 0;
+ }
+ }
+ printTree(M, tree.root, col / 2, 0, h);
+ for (int i = 0; i < h; i++) {
+ for (int j = 0; j < col; j++) {
+ if (M[i][j] == 0)
+ cout << " ";
+ else
+ cout << M[i][j];
+ }
+ cout << endl;
+ }
+}
+class BST {
+public:
+ TreeNode* root;
+ BST() : root(nullptr) {}
+ void insert(int value) {
+ root = insertRecursive(root, value);
+ }
+ void displayInOrder() {
+ displayInOrderRecursive(root);
+ cout << endl;
+ }
+ bool search(int value) {
+ return searchRecursive(root, value);
+ }
+ int findHeight() {
+ return findHeightRecursive(root);
+ }
+ void levelWiseDisplay() {
+ levelWiseDisplayHelper(root);
+ cout << endl;
+ }
+ void deleteNode(int value) {
+ root = deleteNodeRecursive(root, value);
+ }
+ void mirror() {
+ mirrorRecursive(root);
+ }
+ ~BST() {
+ destroyTree(root);
+ }
+private:
+ TreeNode* insertRecursive(TreeNode* node, int value) {
+ if (!node) {
+ return new TreeNode(value);
+ }
+ if (value < node->data) {
+ node->left = insertRecursive(node->left, value);
+ }
+ else if (value > node->data) {
+ node->right = insertRecursive(node->right, value);
+ }
+ return node;
+ }
+ void displayInOrderRecursive(TreeNode* node, int depth = 0) {
+ if (node) {
+ displayInOrderRecursive(node->right, depth + 1);
+ for (int i = 0; i < depth; i++) {
+ cout << "\t";
+ }
+ cout << node->data << endl;
+ displayInOrderRecursive(node->left, depth + 1);
+ }
+ }
+ bool searchRecursive(TreeNode* node, int value) {
+ if (!node) {
+ return false;
+ }
+ if (node->data == value) {
+ return true;
+ }
+ else if (value < node->data) {
+ return searchRecursive(node->left, value);
+ }
+ else {
+ return searchRecursive(node->right, value);
+ }
+ }
+ int findHeightRecursive(TreeNode* node) {
+ if (!node) {
+ return 0;
+ }
+ int leftHeight = findHeightRecursive(node->left);
+ int rightHeight = findHeightRecursive(node->right);
+ return 1 + max(leftHeight, rightHeight);
+ }
+ void levelWiseDisplayHelper(TreeNode* node) {
+ queue<TreeNode*> q;
+ q.push(node);
+ q.push(NULL);
+ while (!q.empty()) {
+ TreeNode* current = q.front();
+ q.pop();
+ if (current == NULL) {
+ cout << endl;
+ if (!q.empty()) {
+ q.push(NULL);
+ }
+ }
+ else {
+ cout << current->data << " ";
+ if (current->left) {
+ q.push(current->left);
+ }
+ if (current->right) {
+ q.push(current->right);
+ }
+ }
+ }
+ }
+ TreeNode* deleteNodeRecursive(TreeNode* root, int value) {
+ if (!root) {
+ return root;
+ }
+ if (value < root->data) {
+ root->left = deleteNodeRecursive(root->left, value);
+ }
+ else if (value > root->data) {
+ root->right = deleteNodeRecursive(root->right, value);
+ }
+ else {
+ if (!root->left) {
+ TreeNode* temp = root->right;
+ delete root;
+ return temp;
+ }
+ else if (!root->right) {
+ TreeNode* temp = root->left;
+ delete root;
+ return temp;
+ }
+ TreeNode* temp = findMinValueNode(root->right);
+ root->data = temp->data;
+ root->right = deleteNodeRecursive(root->right, temp->data);
+ }
+ return root;
+ }
+ TreeNode* findMinValueNode(TreeNode* node) {
+ while (node->left) {
+ node = node->left;
+ }
+ return node;
+ }
+ void mirrorRecursive(TreeNode* node) {
+ if (!node) {
+ return;
+ }
+ swap(node->left, node->right);
+ mirrorRecursive(node->left);
+ mirrorRecursive(node->right);
+ }
+ void destroyTree(TreeNode* node) {
+ if (node) {
+ destroyTree(node->left);
+ destroyTree(node->right);
+ delete node;
+ }
+ }
+};
+int main() {
+ BST bst;
+ while (true) {
+ cout << "\nChoose an operation:\n";
+ cout << "1. Insert\n";
+ cout << "2. Display Inorder\n";
+ cout << "3. Search\n";
+ cout << "4. Find Height\n";
+ cout << "5. Level-wise Display\n";
+ cout << "6. Delete\n";
+ cout << "7. Mirror\n";
+ cout << "8. Exit\n";
+ int choice;
+ cin >> choice;
+ switch (choice) {
+ case 1:
+ int value;
+ cout << "Enter value to insert: ";
+ cin >> value;
+ bst.insert(value);
+ break;
+ case 2:
+ cout << "Inorder Display with Tree Structure:\n";
+ bst.displayInOrder();
+ break;
+ case 3:
+ int searchValue;
+ cout << "Enter value to search: ";
+ cin >> searchValue;
+ cout << (bst.search(searchValue) ? "Found" : "Not Found") << endl;
+ break;
+ case 4:
+ cout << "Tree Height: " << bst.findHeight() << endl;
+ break;
+ case 5:
+ cout << "Level-wise Display: " << endl;
+ bst.levelWiseDisplay();
+ break;
+ case 6:
+ int deleteValue;
+ cout << "Enter value to delete: ";
+ cin >> deleteValue;
+ bst.deleteNode(deleteValue);
+ break;
+ case 7:
+ cout << "Mirroring the tree" << endl;
+ bst.mirror();
+ cout << "Inorder Display after Mirroring:" << endl;
+ bst.displayInOrder();
+ break;
+ case 8:
+ TreePrinter(Tree{ bst.root });
+ cout << endl;
+ return 0; // Exiting the program
+ default:
+ cout << "Invalid choice. Please try again.\n";
+ }
+ }
+ return 0;
+}
