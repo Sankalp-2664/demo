@@ -1,0 +1,170 @@
+#include <iostream>
+#include <cmath>
+#define MAX_VALUE 65536
+using namespace std;
+class N {
+public:
+ int k;
+ N* l;
+ N* r;
+ bool leftTh;
+ bool rightTh;
+};
+class ThreadedBinaryTree {
+private:
+ N* root;
+ N* inorder_successor(N* node) {
+ if (node->rightTh) {
+ return node->r;
+ } else {
+ node = node->r;
+ while (!node->leftTh) {
+ node = node->l;
+ }
+ return node;
+ }
+ }
+public:
+ ThreadedBinaryTree() {
+ root = new N();
+ root->r = root->l = root;
+ root->leftTh = true;
+ root->k = MAX_VALUE;
+ }
+ void insert(int key) {
+ N* p = root;
+ for (;;) {
+ if (p->k < key) {
+ if (p->rightTh)
+ break;
+ p = p->r;
+ } else if (p->k > key) {
+ if (p->leftTh)
+ break;
+ p = p->l;
+ } else {
+ return;
+ }
+ }
+ N* temp = new N();
+ temp->k = key;
+ temp->rightTh = temp->leftTh = true;
+ if (p->k < key) {
+ temp->r = p->r;
+ temp->l = p;
+ p->r = temp;
+ p->rightTh = false;
+ } else {
+ temp->r = p;
+ temp->l = p->l;
+ p->l = temp;
+ p->leftTh = false;
+ }
+ }
+ void inorder() {
+ N* temp = root->l;
+ while (temp != root) {
+ while (!temp->leftTh)
+ temp = temp->l;
+ cout << temp->k << " ";
+ while (temp->rightTh) {
+ temp = temp->r;
+ if (temp == root) break;
+ cout << temp->k << " ";
+ }
+ temp = temp->r;
+ }
+ cout << endl;
+ }
+ void preorder() {
+ N* temp = root->l;
+ while (temp != root) {
+ cout << temp->k << " ";
+ if (!temp->leftTh)
+ temp = temp->l;
+ else if (!temp->rightTh)
+ temp = temp->r;
+ else {
+ while (temp->rightTh && temp->r != root)
+ temp = temp->r;
+ temp = temp->r;
+ }
+ }
+ cout << endl;
+ }
+};
+class TreeNode {
+public:
+ int data;
+ TreeNode* left;
+ TreeNode* right;
+ TreeNode(int value) : data(value), left(nullptr), right(nullptr) {}
+};
+class Tree {
+public:
+ TreeNode* root;
+ Tree(TreeNode* node) : root(node) {}
+};
+int height(TreeNode* root) {
+ if (root == nullptr)
+ return 0;
+ return max(height(root->left), height(root->right)) + 1;
+}
+int getcol(int h) {
+ if (h == 1)
+ return 1;
+ return getcol(h - 1) + getcol(h - 1) + 1;
+}
+void printTree(int** M, TreeNode* root, int col, int row, int treeHeight) {
+ if (root == nullptr)
+ return;
+ M[row][col] = root->data;
+ printTree(M, root->left, col - pow(2, treeHeight - 2), row + 1, treeHeight - 1);
+ printTree(M, root->right, col + pow(2, treeHeight - 2), row + 1, treeHeight - 1);
+}
+void TreePrinter(const Tree& tree) {
+ int h = height(tree.root);
+ int col = getcol(h);
+ int** M = new int*[h];
+ for (int i = 0; i < h; i++) {
+ M[i] = new int[col];
+ for (int j = 0; j < col; j++) {
+ M[i][j] = 0;
+ }
+ }
+ printTree(M, tree.root, col / 2, 0, h);
+ for (int i = 0; i < h; i++) {
+ for (int j = 0; j < col; j++) {
+ if (M[i][j] == 0)
+ cout << " ";
+ else
+ cout << M[i][j];
+ }
+ cout << endl;
+ }
+}
+int main() {
+ ThreadedBinaryTree tbt;
+ cout << "Threaded Binary Tree\n";
+ tbt.insert(56);
+ tbt.insert(23);
+ tbt.insert(89);
+ tbt.insert(85);
+ tbt.insert(20);
+ tbt.insert(30);
+ tbt.insert(12);
+ cout << "Inorder Traversal: ";
+ tbt.inorder();
+ cout << "Preorder Traversal: ";
+ tbt.preorder();
+ cout << "\n";
+ TreeNode* root = new TreeNode(56);
+ root->left = new TreeNode(23);
+ root->right = new TreeNode(89);
+ root->left->left = new TreeNode(20);
+ root->left->right = new TreeNode(30);
+ root->left->left->left = new TreeNode(12);
+ root->right->left = new TreeNode(85);
+ TreePrinter(Tree{ root });
+ return 0;
+}
